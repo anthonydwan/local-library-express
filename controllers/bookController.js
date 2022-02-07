@@ -27,8 +27,16 @@ var index = function (req, res) {
 };
 exports.index = index;
 // Display list of all bookinstances
-var book_list = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Book list");
+var book_list = function (req, res, next) {
+    return Book.find({}, "title author")
+        .sort({ title: 1 })
+        .populate("author")
+        .exec(function (err, list_books) {
+        if (err)
+            next(err);
+        // successful, so render
+        res.render("book_list", { title: "Book List", book_list: list_books });
+    });
 };
 exports.book_list = book_list;
 // Display detail page for a specific bookinstance

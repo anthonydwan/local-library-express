@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+
 const Book = require("../models/book");
 const BookInstance = require("../models/bookinstance");
 const Author = require("../models/author");
@@ -17,7 +18,7 @@ const index = (req: Request, res: Response) => {
       author_count: (callback: any) => Author.countDocuments({}, callback),
       genre_count: (callback: any) => Genre.countDocuments({}, callback),
     },
-    (err: string, results: any) =>
+    (err: string, results: Object) =>
       res.render("index", {
         title: "Local Library Home",
         error: err,
@@ -27,8 +28,15 @@ const index = (req: Request, res: Response) => {
 };
 
 // Display list of all bookinstances
-const book_list = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Book list");
+const book_list = (req: Request, res: Response, next: NextFunction) =>
+  Book.find({}, "title author")
+    .sort({ title: 1 })
+    .populate("author")
+    .exec((err: string, list_books: Object) => {
+      if (err) next(err);
+      // successful, so render
+      res.render("book_list", { title: "Book List", book_list: list_books });
+    });
 
 // Display detail page for a specific bookinstance
 const book_detail = (req: Request, res: Response) =>
