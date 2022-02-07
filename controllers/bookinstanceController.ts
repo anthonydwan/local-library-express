@@ -1,11 +1,18 @@
-import { Request, Response } from "express";
-
-const index = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Site Home Page");
-
+import { NextFunction, Request, Response } from "express";
+let BookInstance = require("../models/bookinstance");
 // Display list of all bookinstances
-const bookinstance_list = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: BookInstance list");
+const bookinstance_list = (req: Request, res: Response, next: NextFunction) => {
+  BookInstance.find()
+    .populate("book")
+    .exec((err: string, list_bookinstances: Object) => {
+      if (err) next(err);
+      // successful, so render
+      res.render("bookinstance_list", {
+        title: "Book Instance List",
+        bookinstance_list: list_bookinstances,
+      });
+    });
+};
 
 // Display detail page for a specific bookinstance
 const bookinstance_detail = (req: Request, res: Response) =>
@@ -36,7 +43,6 @@ const bookinstance_update_post = (req: Request, res: Response) =>
   res.send("NOT IMPLEMENTED: BookInstance update POST");
 
 export {
-  index,
   bookinstance_list,
   bookinstance_detail,
   bookinstance_create_get,

@@ -1,13 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bookinstance_update_post = exports.bookinstance_update_get = exports.bookinstance_delete_post = exports.bookinstance_delete_get = exports.bookinstance_create_post = exports.bookinstance_create_get = exports.bookinstance_detail = exports.bookinstance_list = exports.index = void 0;
-var index = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Site Home Page");
-};
-exports.index = index;
+exports.bookinstance_update_post = exports.bookinstance_update_get = exports.bookinstance_delete_post = exports.bookinstance_delete_get = exports.bookinstance_create_post = exports.bookinstance_create_get = exports.bookinstance_detail = exports.bookinstance_list = void 0;
+var BookInstance = require("../models/bookinstance");
 // Display list of all bookinstances
-var bookinstance_list = function (req, res) {
-    return res.send("NOT IMPLEMENTED: BookInstance list");
+var bookinstance_list = function (req, res, next) {
+    BookInstance.find()
+        .populate("book")
+        .exec(function (err, list_bookinstances) {
+        if (err)
+            next(err);
+        // successful, so render
+        res.render("bookinstance_list", {
+            title: "Book Instance List",
+            bookinstance_list: list_bookinstances,
+        });
+    });
 };
 exports.bookinstance_list = bookinstance_list;
 // Display detail page for a specific bookinstance
