@@ -1,9 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.author_update_post = exports.author_update_get = exports.author_delete_post = exports.author_delete_get = exports.author_create_post = exports.author_create_get = exports.author_detail = exports.author_list = void 0;
+var Author = require("../models/author");
 // Display list of all Authors
-var author_list = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Author list");
+var author_list = function (req, res, next) {
+    return Author.find()
+        .sort([["family_name", "ascending"]])
+        .exec(function (err, list_authors) {
+        if (err)
+            next(err);
+        res.render("author_list", {
+            title: "Author List",
+            author_list: list_authors,
+        });
+    });
 };
 exports.author_list = author_list;
 // Display detail page for a specific Author

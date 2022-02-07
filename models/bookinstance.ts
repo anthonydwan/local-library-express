@@ -1,4 +1,5 @@
 import { Schema, model, Types } from "mongoose";
+import { DateTime } from "luxon";
 
 enum instanceStatus {
   AVAILABLE = "Available",
@@ -31,8 +32,9 @@ BookInstanceSchema.virtual("url").get(function (this: any) {
   return "/catalog/bookinstance/" + this._id;
 });
 
+BookInstanceSchema.virtual("due_back_formatted").get(function (this: any) {
+  return DateTime.fromJSDate(this.due_back).toLocaleString(DateTime.DATE_MED);
+});
+
 // Export model
 module.exports = model<BookInstance>("BookInstance", BookInstanceSchema);
-
-
-

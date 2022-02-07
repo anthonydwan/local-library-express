@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
+var luxon_1 = require("luxon");
 var instanceStatus;
 (function (instanceStatus) {
     instanceStatus["AVAILABLE"] = "Available";
@@ -22,6 +23,9 @@ var BookInstanceSchema = new mongoose_1.Schema({
 // Virtual for book's URL
 BookInstanceSchema.virtual("url").get(function () {
     return "/catalog/bookinstance/" + this._id;
+});
+BookInstanceSchema.virtual("due_back_formatted").get(function () {
+    return luxon_1.DateTime.fromJSDate(this.due_back).toLocaleString(luxon_1.DateTime.DATE_MED);
 });
 // Export model
 module.exports = (0, mongoose_1.model)("BookInstance", BookInstanceSchema);

@@ -1,8 +1,17 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+let Author = require("../models/author");
 
 // Display list of all Authors
-const author_list = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author list");
+const author_list = (req: Request, res: Response, next: NextFunction) =>
+  Author.find()
+    .sort([["family_name", "ascending"]])
+    .exec((err: string, list_authors: Object) => {
+      if (err) next(err);
+      res.render("author_list", {
+        title: "Author List",
+        author_list: list_authors,
+      });
+    });
 
 // Display detail page for a specific Author
 const author_detail = (req: Request, res: Response) =>
