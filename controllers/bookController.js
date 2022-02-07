@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.book_update_post = exports.book_update_get = exports.book_delete_post = exports.book_delete_get = exports.book_create_post = exports.book_create_get = exports.book_detail = exports.book_list = exports.index = void 0;
-var book_1 = require("../models/book");
-var bookinstance_1 = require("../models/bookinstance");
-var genre_1 = require("../models/genre");
-var author_1 = require("../models/author");
+var Book = require("../models/book");
+var BookInstance = require("../models/bookinstance");
+var Author = require("../models/author");
+var Genre = require("../models/genre");
 var async = require("async");
 var index = function (req, res) {
     async.parallel({
-        book_count: function (callback) { return book_1.Book.countDocuments({}, callback); },
+        book_count: function (callback) { return Book.countDocuments({}, callback); },
         book_instance_count: function (callback) {
-            return bookinstance_1.BookInstance.countDocuments({}, callback);
+            return BookInstance.countDocuments({}, callback);
         },
         book_instance_available_count: function (callback) {
-            return bookinstance_1.BookInstance.countDocuments({ status: "Available" }, callback);
+            return BookInstance.countDocuments({ status: "Available" }, callback);
         },
-        author_count: function (callback) { return author_1.Author.countDocuments({}, callback); },
-        genre_count: function (callback) { return genre_1.Genre.countDocuments({}, callback); },
+        author_count: function (callback) { return Author.countDocuments({}, callback); },
+        genre_count: function (callback) { return Genre.countDocuments({}, callback); },
     }, function (err, results) {
         return res.render("index", {
             title: "Local Library Home",

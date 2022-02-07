@@ -47,6 +47,6 @@ AuthorSchema.virtual("url").get(function (this: any) {
 });
 
 // Export model
-let Author = model<Author>("Author", AuthorSchema);
+module.exports = model<Author>("Author", AuthorSchema);
 
-export { Author };
+

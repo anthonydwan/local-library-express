@@ -32,7 +32,7 @@ BookInstanceSchema.virtual("url").get(function (this: any) {
 });
 
 // Export model
-let BookInstance = model<BookInstance>("BookInstance", BookInstanceSchema);
+module.exports = model<BookInstance>("BookInstance", BookInstanceSchema);
 
-export {BookInstance}
+
 

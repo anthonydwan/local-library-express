@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { Book } from "../models/book";
-import { BookInstance } from "../models/bookinstance";
-import { Genre } from "../models/genre";
-import { Author } from "../models/author";
+const Book = require("../models/book");
+const BookInstance = require("../models/bookinstance");
+const Author = require("../models/author");
+const Genre = require("../models/genre");
 
 let async = require("async");
 

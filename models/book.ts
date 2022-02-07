@@ -5,7 +5,7 @@ interface Book {
   author: Types.ObjectId;
   summary: String;
   isbn: String;
-  genre?: Types.ObjectId;
+  genre?: Types.ObjectId[];
 }
 
 let BookSchema = new Schema<Book>({
@@ -13,7 +13,7 @@ let BookSchema = new Schema<Book>({
   author: { type: Types.ObjectId, ref: "Author", required: true },
   summary: { type: String, required: true },
   isbn: { type: String, reuquired: true },
-  genre: { type: Types.ObjectId, ref: "Genre" },
+  genre: [{ type: Types.ObjectId, ref: "Genre" }],
 });
 
 // Virtual for book's URL
@@ -22,6 +22,4 @@ BookSchema.virtual("url").get(function (this: any) {
 });
 
 // Export model
-let Book = model<Book>("Book", BookSchema);
-
-export {Book}
+module.exports = model<Book>("Book", BookSchema);

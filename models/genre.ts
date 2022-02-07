@@ -14,6 +14,4 @@ GenreSchema.virtual("url").get(function (this: any) {
 });
 
 // Export model
-let Genre = model<Genre>("Genre", GenreSchema);
-
-export { Genre };
+module.exports = model<Genre>("Genre", GenreSchema);
