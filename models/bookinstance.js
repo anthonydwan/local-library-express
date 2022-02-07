@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BookInstance = void 0;
 var mongoose_1 = require("mongoose");
 var instanceStatus;
 (function (instanceStatus) {
@@ -24,4 +25,5 @@ BookInstanceSchema.virtual("url").get(function () {
     return "/catalog/bookinstance/" + this._id;
 });
 // Export model
-module.exports = (0, mongoose_1.model)("BookInstance", BookInstanceSchema);
+var BookInstance = (0, mongoose_1.model)("BookInstance", BookInstanceSchema);
+exports.BookInstance = BookInstance;

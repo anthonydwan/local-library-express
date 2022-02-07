@@ -22,4 +22,6 @@ BookSchema.virtual("url").get(function (this: any) {
 });
 
 // Export model
-module.exports = model<Book>("Book", BookSchema);
+let Book = model<Book>("Book", BookSchema);
+
+export {Book}

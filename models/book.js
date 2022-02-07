@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Book = void 0;
 var mongoose_1 = require("mongoose");
 var BookSchema = new mongoose_1.Schema({
     title: { type: String, required: true },
@@ -13,4 +14,5 @@ BookSchema.virtual("url").get(function () {
     return "/catalog/book/" + this._id;
 });
 // Export model
-module.exports = (0, mongoose_1.model)("Book", BookSchema);
+var Book = (0, mongoose_1.model)("Book", BookSchema);
+exports.Book = Book;

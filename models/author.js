@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Author = void 0;
 var mongoose_1 = require("mongoose");
 var AuthorSchema = new mongoose_1.Schema({
     first_name: { type: String, required: true, maxLength: 100 },
@@ -37,4 +38,5 @@ AuthorSchema.virtual("url").get(function () {
     return "/catalog/author/" + this._id;
 });
 // Export model
-module.exports = (0, mongoose_1.model)("Author", AuthorSchema);
+var Author = (0, mongoose_1.model)("Author", AuthorSchema);
+exports.Author = Author;

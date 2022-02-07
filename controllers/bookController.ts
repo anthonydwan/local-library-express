@@ -1,7 +1,30 @@
 import { Request, Response } from "express";
+import { Book } from "../models/book";
+import { BookInstance } from "../models/bookinstance";
+import { Genre } from "../models/genre";
+import { Author } from "../models/author";
 
-const index = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Site Home Page");
+let async = require("async");
+
+const index = (req: Request, res: Response) => {
+  async.parallel(
+    {
+      book_count: (callback: any) => Book.countDocuments({}, callback),
+      book_instance_count: (callback: any) =>
+        BookInstance.countDocuments({}, callback),
+      book_instance_available_count: (callback: any) =>
+        BookInstance.countDocuments({ status: "Available" }, callback),
+      author_count: (callback: any) => Author.countDocuments({}, callback),
+      genre_count: (callback: any) => Genre.countDocuments({}, callback),
+    },
+    (err: string, results: any) =>
+      res.render("index", {
+        title: "Local Library Home",
+        error: err,
+        data: results,
+      })
+  );
+};
 
 // Display list of all bookinstances
 const book_list = (req: Request, res: Response) =>
