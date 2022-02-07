@@ -16,4 +16,4 @@ Genre.virtual("url").get(function () {
     return "/catalog/genre/" + this._id;
 });
 // Export model
-module.exports = mongoose_1.model("Genre", Genre);
+module.exports = (0, mongoose_1.model)("Genre", Genre);

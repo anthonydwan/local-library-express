@@ -1,4 +1,3 @@
-import { Genre } from "../models/genre";
 import { Request, Response } from "express";
 
 // Display list of all genres

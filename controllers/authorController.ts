@@ -1,4 +1,3 @@
-import { Author } from "../models/author";
 import { Request, Response } from "express";
 
 // Display list of all Authors
