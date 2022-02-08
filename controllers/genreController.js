@@ -1,9 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.genre_update_post = exports.genre_update_get = exports.genre_delete_post = exports.genre_delete_get = exports.genre_create_post = exports.genre_create_get = exports.genre_detail = exports.genre_list = void 0;
+var Genre = require("../models/genre");
 // Display list of all genres
-var genre_list = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Genre list");
+var genre_list = function (req, res, next) {
+    return Genre.find()
+        .sort([["name", "ascending"]])
+        .exec(function (err, list_genre) {
+        if (err)
+            next(err);
+        res.render("genre_list", {
+            title: "Genre List",
+            genre_list: list_genre,
+        });
+    });
 };
 exports.genre_list = genre_list;
 // Display detail page for a specific genre

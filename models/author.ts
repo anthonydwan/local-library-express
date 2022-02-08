@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { DateTime } from "luxon";
 
 interface Author {
   first_name: String;
@@ -46,7 +47,18 @@ AuthorSchema.virtual("url").get(function (this: any) {
   return "/catalog/author/" + this._id;
 });
 
+// Virtual for author's url
+AuthorSchema.virtual("formatted_date_of_birth").get(function (this: any) {
+  return this.date_of_birth
+    ? DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED)
+    : "";
+});
+
+AuthorSchema.virtual("formatted_date_of_death").get(function (this: any) {
+  return this.date_of_death
+    ? DateTime.fromJSDate(this.date_of_death).toLocaleString(DateTime.DATE_MED)
+    : "";
+});
+
 // Export model
 module.exports = model<Author>("Author", AuthorSchema);
-
-

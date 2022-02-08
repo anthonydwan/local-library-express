@@ -1,8 +1,17 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+let Genre = require("../models/genre")
 
 // Display list of all genres
-const genre_list = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre list");
+const genre_list = (req: Request, res: Response, next:NextFunction) =>
+  Genre.find()
+  .sort([["name", "ascending"]])
+  .exec((err: string, list_genre: Object) => {
+    if (err) next(err);
+    res.render("genre_list", {
+      title: "Genre List",
+      genre_list: list_genre,
+    });
+  });
 
 // Display detail page for a specific genre
 const genre_detail = (req: Request, res: Response) =>

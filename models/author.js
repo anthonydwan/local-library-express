@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
+var luxon_1 = require("luxon");
 var AuthorSchema = new mongoose_1.Schema({
     first_name: { type: String, required: true, maxLength: 100 },
     family_name: { type: String, required: true, maxLength: 100 },
@@ -35,6 +36,17 @@ AuthorSchema.virtual("lifespan").get(function () {
 // Virtual for author's url
 AuthorSchema.virtual("url").get(function () {
     return "/catalog/author/" + this._id;
+});
+// Virtual for author's url
+AuthorSchema.virtual("formatted_date_of_birth").get(function () {
+    return this.date_of_birth
+        ? luxon_1.DateTime.fromJSDate(this.date_of_birth).toLocaleString(luxon_1.DateTime.DATE_MED)
+        : "";
+});
+AuthorSchema.virtual("formatted_date_of_death").get(function () {
+    return this.date_of_death
+        ? luxon_1.DateTime.fromJSDate(this.date_of_death).toLocaleString(luxon_1.DateTime.DATE_MED)
+        : "";
 });
 // Export model
 module.exports = (0, mongoose_1.model)("Author", AuthorSchema);
