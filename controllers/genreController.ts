@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { BookType, GenreType } from "../models/modelTypes";
+import { body, validationResult } from "express-validator";
+import { isBuffer } from "util";
 
 let Genre = require("../models/genre");
 let Book = require("../models/book");
@@ -46,11 +48,49 @@ const genre_detail = (req: Request, res: Response, next: NextFunction) => {
 
 // Display genre create form on GET
 const genre_create_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre create GET");
+  res.render("genre_form", { title: "Create Genre" });
 
 // Handle genre create on POST
-const genre_create_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre create POST");
+const genre_create_post = [
+  // Validate and sanitize the name field
+  body("name", "Genre name required").trim().isLength({ min: 1 }).escape(),
+
+  // Process request after validation and sanitization.
+  (req: Request, res: Response, next: NextFunction) => {
+    // Extract the validation errors cfrom a request
+    const errors = validationResult(req);
+
+    // Create a genre object with escaped and trimmed data
+    let genre = new Genre({ name: req.body.name });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render the form again with santized values/error messages.
+      res.render("genre_form", {
+        title: "Create Genre",
+        genre: genre,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid.
+      // Check if Genre with same name already exists.
+      Genre.findOne({ name: req.body.name }).exec(
+        (err: String, found_genre: any) => {
+          if (err) return next(err);
+          if (found_genre) {
+            res.redirect(found_genre.url);
+          } else {
+            genre.save((err: string) => {
+              if (err) return next(err);
+              // Genre saved. Redirect to genre detail page.
+              res.redirect(genre.url);
+            });
+          }
+        }
+      );
+    }
+  },
+];
 
 // Display genre delete frorm on GET
 const genre_delete_get = (req: Request, res: Response) =>
