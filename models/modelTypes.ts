@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export interface Author {
+export interface AuthorType {
   first_name: String;
   family_name: String;
   date_of_birth?: Date;

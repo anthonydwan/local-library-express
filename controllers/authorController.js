@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.author_update_post = exports.author_update_get = exports.author_delete_post = exports.author_delete_get = exports.author_create_post = exports.author_create_get = exports.author_detail = exports.author_list = void 0;
 var Author = require("../models/author");
+var Book = require("../models/book");
+var async = require("async");
 // Display list of all Authors
 var author_list = function (req, res, next) {
     return Author.find()
@@ -17,8 +19,26 @@ var author_list = function (req, res, next) {
 };
 exports.author_list = author_list;
 // Display detail page for a specific Author
-var author_detail = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Author detail: " + req.params.id);
+var author_detail = function (req, res, next) {
+    async.parallel({
+        author: function (callback) { return Author.findById(req.params.id).exec(callback); },
+        authors_books: function (callback) {
+            return Book.find({ author: req.params.id }, "title summary").exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            next(err);
+        if (results.author == null) {
+            var e = new Error("Author not found");
+            res.status(404);
+            return next(e);
+        }
+        res.render("author_detail", {
+            title: "Author Detail",
+            author: results.author,
+            author_books: results.authors_books,
+        });
+    });
 };
 exports.author_detail = author_detail;
 // Display Author create form on GET

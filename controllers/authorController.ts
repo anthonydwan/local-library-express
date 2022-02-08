@@ -1,5 +1,9 @@
 import { NextFunction, Request, Response } from "express";
+import { AuthorType, BookType } from "../models/modelTypes";
+import { book_create_get } from "./bookController";
 let Author = require("../models/author");
+let Book = require("../models/book");
+let async = require("async");
 
 // Display list of all Authors
 const author_list = (req: Request, res: Response, next: NextFunction) =>
@@ -14,8 +18,28 @@ const author_list = (req: Request, res: Response, next: NextFunction) =>
     });
 
 // Display detail page for a specific Author
-const author_detail = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author detail: " + req.params.id);
+const author_detail = (req: Request, res: Response, next: NextFunction) => {
+  async.parallel(
+    {
+      author: (callback: any) => Author.findById(req.params.id).exec(callback),
+      authors_books: (callback: any) =>
+        Book.find({ author: req.params.id }, "title summary").exec(callback),
+    },
+    (err: String, results: { author: AuthorType; authors_books: BookType }) => {
+      if (err) next(err);
+      if (results.author == null) {
+        let e = new Error("Author not found");
+        res.status(404);
+        return next(e);
+      }
+      res.render("author_detail", {
+        title: "Author Detail",
+        author: results.author,
+        author_books: results.authors_books,
+      });
+    }
+  );
+};
 
 // Display Author create form on GET
 const author_create_get = (req: Request, res: Response) =>

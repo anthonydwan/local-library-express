@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import { BookType, BookInstanceTye } from "../models/modelTypes";
-import { model } from "mongoose";
 
 const Book = require("../models/book");
 const BookInstance = require("../models/bookinstance");
