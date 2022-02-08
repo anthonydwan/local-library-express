@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { BookType, GenreType } from "../models/modelTypes";
+
 let Genre = require("../models/genre");
 let Book = require("../models/book");
 let async = require("async");
@@ -26,7 +28,7 @@ const genre_detail = (req: Request, res: Response, next: NextFunction) => {
         Book.find({ genre: req.params.id }).exec(callback);
       },
     },
-    (err: string, results: any) => {
+    (err: string, results: { genre: GenreType; genre_books: BookType }) => {
       if (err) next(err);
       if (results.genre == null) {
         var e = new Error("Genre not found");

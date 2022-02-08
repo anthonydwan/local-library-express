@@ -40,8 +40,31 @@ var book_list = function (req, res, next) {
 };
 exports.book_list = book_list;
 // Display detail page for a specific bookinstance
-var book_detail = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Book detail: " + req.params.id);
+var book_detail = function (req, res, next) {
+    async.parallel({
+        book: function (callback) {
+            Book.findById(req.params.id)
+                .populate("author")
+                .populate("genre")
+                .exec(callback);
+        },
+        book_instance: function (callback) {
+            BookInstance.find({ book: req.params.id }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            next(err);
+        if (results.book == null) {
+            var e = new Error("Book not found");
+            res.status(404);
+            return next(e);
+        }
+        res.render("book_detail", {
+            title: results.book.title,
+            book: results.book,
+            book_instances: results.book_instance,
+        });
+    });
 };
 exports.book_detail = book_detail;
 // Display bookinstance create form on GET

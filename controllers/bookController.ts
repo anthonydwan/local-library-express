@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from "express";
+import { BookType, BookInstanceTye } from "../models/modelTypes";
+import { model } from "mongoose";
 
 const Book = require("../models/book");
 const BookInstance = require("../models/bookinstance");
@@ -39,8 +41,37 @@ const book_list = (req: Request, res: Response, next: NextFunction) =>
     });
 
 // Display detail page for a specific bookinstance
-const book_detail = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Book detail: " + req.params.id);
+const book_detail = (req: Request, res: Response, next: NextFunction) => {
+  async.parallel(
+    {
+      book: (callback: any) => {
+        Book.findById(req.params.id)
+          .populate("author")
+          .populate("genre")
+          .exec(callback);
+      },
+      book_instance: (callback: any) => {
+        BookInstance.find({ book: req.params.id }).exec(callback);
+      },
+    },
+    (
+      err: String,
+      results: { book: BookType; book_instance: BookInstanceTye }
+    ) => {
+      if (err) next(err);
+      if (results.book == null) {
+        let e = new Error("Book not found");
+        res.status(404);
+        return next(e);
+      }
+      res.render("book_detail", {
+        title: results.book.title,
+        book: results.book,
+        book_instances: results.book_instance,
+      });
+    }
+  );
+};
 
 // Display bookinstance create form on GET
 const book_create_get = (req: Request, res: Response) =>
