@@ -5,7 +5,7 @@ const bookinstance_list = (req: Request, res: Response, next: NextFunction) => {
   BookInstance.find()
     .populate("book")
     .exec((err: string, list_bookinstances: Object) => {
-      if (err) next(err);
+      if (err) return next(err);
       // successful, so render
       res.render("bookinstance_list", {
         title: "Book Instance List",
@@ -15,8 +15,21 @@ const bookinstance_list = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Display detail page for a specific bookinstance
-const bookinstance_detail = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: BookInstance detail: " + req.params.id);
+const bookinstance_detail = (req: Request, res: Response, next: NextFunction) =>
+  BookInstance.findById(req.params.id)
+    .populate("book")
+    .exec((err: String, bookinstance: any) => {
+      if (err) return next;
+      if (bookinstance == null) {
+        let e = new Error("Book copy not found");
+        res.status(404);
+        return next(e);
+      }
+      res.render("bookinstance_detail", {
+        title: "Copy: " + bookinstance.book.title,
+        bookinstance: bookinstance,
+      });
+    });
 
 // Display bookinstance create form on GET
 const bookinstance_create_get = (req: Request, res: Response) =>

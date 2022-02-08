@@ -8,7 +8,7 @@ var bookinstance_list = function (req, res, next) {
         .populate("book")
         .exec(function (err, list_bookinstances) {
         if (err)
-            next(err);
+            return next(err);
         // successful, so render
         res.render("bookinstance_list", {
             title: "Book Instance List",
@@ -18,8 +18,22 @@ var bookinstance_list = function (req, res, next) {
 };
 exports.bookinstance_list = bookinstance_list;
 // Display detail page for a specific bookinstance
-var bookinstance_detail = function (req, res) {
-    return res.send("NOT IMPLEMENTED: BookInstance detail: " + req.params.id);
+var bookinstance_detail = function (req, res, next) {
+    return BookInstance.findById(req.params.id)
+        .populate("book")
+        .exec(function (err, bookinstance) {
+        if (err)
+            return next;
+        if (bookinstance == null) {
+            var e = new Error("Book copy not found");
+            res.status(404);
+            return next(e);
+        }
+        res.render("bookinstance_detail", {
+            title: "Copy: " + bookinstance.book.title,
+            bookinstance: bookinstance,
+        });
+    });
 };
 exports.bookinstance_detail = bookinstance_detail;
 // Display bookinstance create form on GET

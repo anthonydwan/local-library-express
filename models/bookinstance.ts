@@ -1,21 +1,8 @@
 import { Schema, model, Types } from "mongoose";
 import { DateTime } from "luxon";
+import { BookInstanceType, instanceStatus } from "../models/modelTypes";
 
-enum instanceStatus {
-  AVAILABLE = "Available",
-  MAINTENANCE = "Maintenance",
-  LOANED = "Loaned",
-  RESERVED = "Reserved",
-}
-
-interface BookInstance {
-  book: Types.ObjectId;
-  imprint: String;
-  status: instanceStatus;
-  due_back: Date;
-}
-
-let BookInstanceSchema = new Schema<BookInstance>({
+let BookInstanceSchema = new Schema<BookInstanceType>({
   book: { type: Types.ObjectId, ref: "Book", required: true },
   imprint: { type: String, required: true },
   status: {
@@ -37,4 +24,4 @@ BookInstanceSchema.virtual("due_back_formatted").get(function (this: any) {
 });
 
 // Export model
-module.exports = model<BookInstance>("BookInstance", BookInstanceSchema);
+module.exports = model<BookInstanceType>("BookInstance", BookInstanceSchema);

@@ -33,7 +33,7 @@ var book_list = function (req, res, next) {
         .populate("author")
         .exec(function (err, list_books) {
         if (err)
-            next(err);
+            return next(err);
         // successful, so render
         res.render("book_list", { title: "Book List", book_list: list_books });
     });
@@ -53,7 +53,7 @@ var book_detail = function (req, res, next) {
         },
     }, function (err, results) {
         if (err)
-            next(err);
+            return next(err);
         if (results.book == null) {
             var e = new Error("Book not found");
             res.status(404);

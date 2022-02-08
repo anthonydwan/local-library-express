@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
 import { DateTime } from "luxon";
 
-
 interface Author {
   first_name: String;
   family_name: String;
@@ -59,6 +58,31 @@ AuthorSchema.virtual("formatted_date_of_death").get(function (this: any) {
   return this.date_of_death
     ? DateTime.fromJSDate(this.date_of_death).toLocaleString(DateTime.DATE_MED)
     : "";
+});
+
+AuthorSchema.virtual("lifespan").get(function (this: any) {
+  if (this.date_of_birth && this.date_of_death) {
+    return (
+      DateTime.fromJSDate(this.date_of_birth).toLocaleString(
+        DateTime.DATE_MED
+      ) +
+      " - " +
+      DateTime.fromJSDate(this.date_of_death).toLocaleString(DateTime.DATE_MED)
+    );
+  } else if (this.date_of_birth) {
+    return (
+      DateTime.fromJSDate(this.date_of_birth).toLocaleString(
+        DateTime.DATE_MED
+      ) + " - "
+    );
+  } else if (this.date_of_death) {
+    return (
+      "unknown - " +
+      DateTime.fromJSDate(this.date_of_birth).toLocaleString(DateTime.DATE_MED)
+    );
+  } else {
+    return "unknown";
+  }
 });
 
 // Export model

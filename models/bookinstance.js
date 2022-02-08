@@ -2,21 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
 var luxon_1 = require("luxon");
-var instanceStatus;
-(function (instanceStatus) {
-    instanceStatus["AVAILABLE"] = "Available";
-    instanceStatus["MAINTENANCE"] = "Maintenance";
-    instanceStatus["LOANED"] = "Loaned";
-    instanceStatus["RESERVED"] = "Reserved";
-})(instanceStatus || (instanceStatus = {}));
+var modelTypes_1 = require("../models/modelTypes");
 var BookInstanceSchema = new mongoose_1.Schema({
     book: { type: mongoose_1.Types.ObjectId, ref: "Book", required: true },
     imprint: { type: String, required: true },
     status: {
         type: String,
         required: true,
-        enum: instanceStatus,
-        default: instanceStatus.MAINTENANCE,
+        enum: modelTypes_1.instanceStatus,
+        default: modelTypes_1.instanceStatus.MAINTENANCE,
     },
     due_back: { type: Date, default: Date.now },
 });

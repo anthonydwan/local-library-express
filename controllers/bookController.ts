@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { BookType, BookInstanceTye } from "../models/modelTypes";
+import { BookType, BookInstanceType } from "../models/modelTypes";
+import { bookCrtlIndexType } from "./controllerTypes";
 
 const Book = require("../models/book");
 const BookInstance = require("../models/bookinstance");
@@ -19,7 +20,7 @@ const index = (req: Request, res: Response) => {
       author_count: (callback: any) => Author.countDocuments({}, callback),
       genre_count: (callback: any) => Genre.countDocuments({}, callback),
     },
-    (err: string, results: Object) =>
+    (err: string, results: bookCrtlIndexType) =>
       res.render("index", {
         title: "Local Library Home",
         error: err,
@@ -34,7 +35,7 @@ const book_list = (req: Request, res: Response, next: NextFunction) =>
     .sort({ title: 1 })
     .populate("author")
     .exec((err: string, list_books: Object) => {
-      if (err) next(err);
+      if (err) return next(err);
       // successful, so render
       res.render("book_list", { title: "Book List", book_list: list_books });
     });
@@ -55,9 +56,9 @@ const book_detail = (req: Request, res: Response, next: NextFunction) => {
     },
     (
       err: String,
-      results: { book: BookType; book_instance: BookInstanceTye }
+      results: { book: BookType; book_instance: BookInstanceType }
     ) => {
-      if (err) next(err);
+      if (err) return next(err);
       if (results.book == null) {
         let e = new Error("Book not found");
         res.status(404);

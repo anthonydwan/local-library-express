@@ -10,7 +10,7 @@ const genre_list = (req: Request, res: Response, next: NextFunction) =>
   Genre.find()
     .sort([["name", "ascending"]])
     .exec((err: string, list_genre: Object) => {
-      if (err) next(err);
+      if (err) return next(err);
       res.render("genre_list", {
         title: "Genre List",
         genre_list: list_genre,
@@ -29,11 +29,11 @@ const genre_detail = (req: Request, res: Response, next: NextFunction) => {
       },
     },
     (err: string, results: { genre: GenreType; genre_books: BookType }) => {
-      if (err) next(err);
+      if (err) return next(err);
       if (results.genre == null) {
         var e = new Error("Genre not found");
         res.status(404);
-        next(e);
+        return next(e);
       }
       res.render("genre_detail", {
         title: "Genre Detail",

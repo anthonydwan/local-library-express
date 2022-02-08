@@ -10,7 +10,7 @@ var author_list = function (req, res, next) {
         .sort([["family_name", "ascending"]])
         .exec(function (err, list_authors) {
         if (err)
-            next(err);
+            return next(err);
         res.render("author_list", {
             title: "Author List",
             author_list: list_authors,
@@ -27,7 +27,7 @@ var author_detail = function (req, res, next) {
         },
     }, function (err, results) {
         if (err)
-            next(err);
+            return next(err);
         if (results.author == null) {
             var e = new Error("Author not found");
             res.status(404);

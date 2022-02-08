@@ -10,7 +10,7 @@ var genre_list = function (req, res, next) {
         .sort([["name", "ascending"]])
         .exec(function (err, list_genre) {
         if (err)
-            next(err);
+            return next(err);
         res.render("genre_list", {
             title: "Genre List",
             genre_list: list_genre,
@@ -29,11 +29,11 @@ var genre_detail = function (req, res, next) {
         },
     }, function (err, results) {
         if (err)
-            next(err);
+            return next(err);
         if (results.genre == null) {
             var e = new Error("Genre not found");
             res.status(404);
-            next(e);
+            return next(e);
         }
         res.render("genre_detail", {
             title: "Genre Detail",

@@ -10,7 +10,7 @@ const author_list = (req: Request, res: Response, next: NextFunction) =>
   Author.find()
     .sort([["family_name", "ascending"]])
     .exec((err: string, list_authors: Object) => {
-      if (err) next(err);
+      if (err) return next(err);
       res.render("author_list", {
         title: "Author List",
         author_list: list_authors,
@@ -26,7 +26,7 @@ const author_detail = (req: Request, res: Response, next: NextFunction) => {
         Book.find({ author: req.params.id }, "title summary").exec(callback),
     },
     (err: String, results: { author: AuthorType; authors_books: BookType }) => {
-      if (err) next(err);
+      if (err) return next(err);
       if (results.author == null) {
         let e = new Error("Author not found");
         res.status(404);

@@ -15,14 +15,14 @@ export interface BookType {
   genre?: Types.ObjectId[];
 }
 
-enum instanceStatus {
+export enum instanceStatus {
   AVAILABLE = "Available",
   MAINTENANCE = "Maintenance",
   LOANED = "Loaned",
   RESERVED = "Reserved",
 }
 
-export interface BookInstanceTye {
+export interface BookInstanceType {
   book: Types.ObjectId;
   imprint: String;
   status: instanceStatus;
