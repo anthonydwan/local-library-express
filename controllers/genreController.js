@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.genre_update_post = exports.genre_update_get = exports.genre_delete_post = exports.genre_delete_get = exports.genre_create_post = exports.genre_create_get = exports.genre_detail = exports.genre_list = void 0;
 var Genre = require("../models/genre");
+var Book = require("../models/book");
+var async = require("async");
 // Display list of all genres
 var genre_list = function (req, res, next) {
     return Genre.find()
@@ -17,8 +19,28 @@ var genre_list = function (req, res, next) {
 };
 exports.genre_list = genre_list;
 // Display detail page for a specific genre
-var genre_detail = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Genre detail: " + req.params.id);
+var genre_detail = function (req, res, next) {
+    async.parallel({
+        genre: function (callback) {
+            Genre.findById(req.params.id).exec(callback);
+        },
+        genre_books: function (callback) {
+            Book.find({ genre: req.params.id }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            next(err);
+        if (results.genre == null) {
+            var e = new Error("Genre not found");
+            res.status(404);
+            next(e);
+        }
+        res.render("genre_detail", {
+            title: "Genre Detail",
+            genre: results.genre,
+            genre_books: results.genre_books,
+        });
+    });
 };
 exports.genre_detail = genre_detail;
 // Display genre create form on GET

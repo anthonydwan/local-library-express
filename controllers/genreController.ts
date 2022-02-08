@@ -1,21 +1,46 @@
 import { NextFunction, Request, Response } from "express";
-let Genre = require("../models/genre")
+let Genre = require("../models/genre");
+let Book = require("../models/book");
+let async = require("async");
 
 // Display list of all genres
-const genre_list = (req: Request, res: Response, next:NextFunction) =>
+const genre_list = (req: Request, res: Response, next: NextFunction) =>
   Genre.find()
-  .sort([["name", "ascending"]])
-  .exec((err: string, list_genre: Object) => {
-    if (err) next(err);
-    res.render("genre_list", {
-      title: "Genre List",
-      genre_list: list_genre,
+    .sort([["name", "ascending"]])
+    .exec((err: string, list_genre: Object) => {
+      if (err) next(err);
+      res.render("genre_list", {
+        title: "Genre List",
+        genre_list: list_genre,
+      });
     });
-  });
 
 // Display detail page for a specific genre
-const genre_detail = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre detail: " + req.params.id);
+const genre_detail = (req: Request, res: Response, next: NextFunction) => {
+  async.parallel(
+    {
+      genre: (callback: any) => {
+        Genre.findById(req.params.id).exec(callback);
+      },
+      genre_books: (callback: any) => {
+        Book.find({ genre: req.params.id }).exec(callback);
+      },
+    },
+    (err: string, results: any) => {
+      if (err) next(err);
+      if (results.genre == null) {
+        var e = new Error("Genre not found");
+        res.status(404);
+        next(e);
+      }
+      res.render("genre_detail", {
+        title: "Genre Detail",
+        genre: results.genre,
+        genre_books: results.genre_books,
+      });
+    }
+  );
+};
 
 // Display genre create form on GET
 const genre_create_get = (req: Request, res: Response) =>
