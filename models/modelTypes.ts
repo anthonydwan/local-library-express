@@ -12,7 +12,7 @@ export interface BookType {
   author: Types.ObjectId;
   summary: String;
   isbn: String;
-  genre?: Types.ObjectId[];
+  genre: Types.ObjectId[];
 }
 
 export enum instanceStatus {
