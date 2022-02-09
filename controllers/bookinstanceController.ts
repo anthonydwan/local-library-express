@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { body, validationResult } from "express-validator";
-import { BookType } from "../models/modelTypes";
+import { BookInstanceType, BookType } from "../models/modelTypes";
+import { bookCrtlIndexType } from "./controllerTypes";
 let Book = require("../models/book");
+let async = require("async");
 
 let BookInstance = require("../models/bookinstance");
 // Display list of all bookinstances
@@ -103,12 +105,53 @@ const bookinstance_create_post = [
 ];
 
 // Display bookinstance delete frorm on GET
-const bookinstance_delete_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: BookInstance delete GET");
+const bookinstance_delete_get = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) =>
+  async.parallel(
+    {
+      bookinstance: (callback: any) =>
+        BookInstance.findById(req.params.id).exec(callback),
+    },
+    (err: string, results: { bookinstance: BookInstanceType }) => {
+      if (err) return next(err);
+      if (results.bookinstance == null) res.redirect("/catalog/bookinstances");
+      res.render("bookinstance_delete", {
+        title: "BookInstance Delete",
+        bookinstance: results.bookinstance,
+      });
+    }
+  );
 
 // Handle bookinstance delete on POST
-const bookinstance_delete_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: BookInstance delete POST");
+const bookinstance_delete_post = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) =>
+  async.parallel(
+    {
+      bookinstance: (callback: any) =>
+        BookInstance.findById(req.body.bookinstanceid).exec(callback),
+    },
+    (err: string, results: { bookinstance: BookInstanceType[] }) => {
+      if (err) return next(err);
+      // Success
+      {
+        // Delete
+        BookInstance.findByIdAndRemove(
+          req.body.bookinstanceid,
+          function deleteBookInstance(err: string) {
+            if (err) return next(err);
+            // Success - go to bookinstance
+            res.redirect("/catalog/bookinstances");
+          }
+        );
+      }
+    }
+  );
 
 // Display bookinstance update form on GET
 const bookinstance_update_get = (req: Request, res: Response) =>

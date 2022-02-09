@@ -114,7 +114,7 @@ var author_delete_get = function (req, res, next) {
         if (err)
             return next(err);
         if (results.author == null)
-            res.redirect("catalog/authors");
+            res.redirect("/catalog/authors");
         res.render("author_delete", {
             title: "Delete Author",
             author: results.author,

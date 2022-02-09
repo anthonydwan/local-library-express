@@ -116,7 +116,7 @@ const author_delete_get = (req: Request, res: Response, next: NextFunction) =>
       results: { author: AuthorType; authors_books: BookType[] }
     ) => {
       if (err) return next(err);
-      if (results.author == null) res.redirect("catalog/authors");
+      if (results.author == null) res.redirect("/catalog/authors");
       res.render("author_delete", {
         title: "Delete Author",
         author: results.author,
