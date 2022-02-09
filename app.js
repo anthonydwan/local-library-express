@@ -4,7 +4,7 @@ var createError = require("http-errors");
 var express = require("express");
 
 let mongoose = require("mongoose");
-let dev_db_url = `mongodb+srv://anthonydwan:${config.password}@cluster0.67bm9.mongodb.net/Cluster0?retryWrites=true&w=majority`;
+let dev_db_url = `mongodb+srv://anthonydwan:0edeMvIFeEaJTqQK@cluster0.67bm9.mongodb.net/Cluster0?retryWrites=true&w=majority`;
 let mongoDB = process.env.MONGODB_URI || dev_db_url;
 
 mongoose.connect(mongoDB, { useNewUrlParser: true });
