@@ -4,7 +4,9 @@ var createError = require("http-errors");
 var express = require("express");
 
 let mongoose = require("mongoose");
-let mongoDB = `mongodb+srv://anthonydwan:${config.password}@cluster0.67bm9.mongodb.net/Cluster0?retryWrites=true&w=majority`;
+let dev_db_url = `mongodb+srv://anthonydwan:${config.password}@cluster0.67bm9.mongodb.net/Cluster0?retryWrites=true&w=majority`;
+let mongoDB = process.env.MONGODB_URI || dev_db_url;
+
 mongoose.connect(mongoDB, { useNewUrlParser: true });
 let db = mongoose.connection;
 db.on("error", console.error.bind(console, "MongoDB connection error:"));
@@ -12,7 +14,9 @@ db.on("error", console.error.bind(console, "MongoDB connection error:"));
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
+//Import routes for "catalog" area of site
+var compression = require("compression");
+let helmet = require("helmet");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 let catalogRouter = require("./routes/catalog"); // Import routes for catalog area of site
@@ -27,7 +31,9 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(compression());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(helmet());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
