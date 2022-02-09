@@ -142,12 +142,62 @@ var genre_delete_post = function (req, res, next) {
 };
 exports.genre_delete_post = genre_delete_post;
 // Display genre update form on GET
-var genre_update_get = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Genre update GET");
+var genre_update_get = function (req, res, next) {
+    return async.parallel({
+        genre: function (callback) { return Genre.findById(req.params.id).exec(callback); },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        if (results.genre == null) {
+            var e = new Error("Genre not found");
+            res.status(404);
+            return next(e);
+        }
+        // success
+        res.render("genre_form", {
+            title: "Update Genre",
+            genre: results.genre,
+        });
+    });
 };
 exports.genre_update_get = genre_update_get;
 // Display genre update form on POST
-var genre_update_post = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Genre update POST");
-};
+var genre_update_post = [
+    // Validate and sanitize the name field
+    (0, express_validator_1.body)("name", "Genre name required").trim().isLength({ min: 1 }).escape(),
+    // Process request after validation and sanitization.
+    function (req, res, next) {
+        // Extract the validation errors from a request.
+        var errors = (0, express_validator_1.validationResult)(req);
+        // Create a Book object with escaped/trimmed data and old id.
+        var genre = new Genre({
+            name: req.body.name,
+            _id: req.params.id, //This is required, or a new ID will be assigned!
+        });
+        if (!errors.isEmpty()) {
+            // There are errors. Render form again with sanitized values/error messages.
+            async.parallel(function (err, results) {
+                if (err) {
+                    return next(err);
+                }
+                res.render("genre_form", {
+                    title: "Update Genre",
+                    genre: genre,
+                    errors: errors.array(),
+                });
+            });
+            return;
+        }
+        else {
+            // Data from form is valid. Update the record.
+            Genre.findByIdAndUpdate(req.params.id, genre, {}, function (err, thegenre) {
+                if (err) {
+                    return next(err);
+                }
+                // Successful - redirect to genre detail page.
+                res.redirect(thegenre.url);
+            });
+        }
+    },
+];
 exports.genre_update_post = genre_update_post;

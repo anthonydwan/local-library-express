@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { BookType, GenreType } from "../models/modelTypes";
 import { body, validationResult } from "express-validator";
-import { isBuffer } from "util";
 
 let Genre = require("../models/genre");
 let Book = require("../models/book");
@@ -144,12 +143,73 @@ const genre_delete_post = (req: Request, res: Response, next: NextFunction) =>
   );
 
 // Display genre update form on GET
-const genre_update_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre update GET");
+const genre_update_get = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      genre: (callback: any) => Genre.findById(req.params.id).exec(callback),
+    },
+    (err: string, results: { genre: GenreType }) => {
+      if (err) return next(err);
+      if (results.genre == null) {
+        let e = new Error("Genre not found");
+        res.status(404);
+        return next(e);
+      }
+      // success
+      res.render("genre_form", {
+        title: "Update Genre",
+        genre: results.genre,
+      });
+    }
+  );
 
 // Display genre update form on POST
-const genre_update_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre update POST");
+const genre_update_post = [
+  // Validate and sanitize the name field
+  body("name", "Genre name required").trim().isLength({ min: 1 }).escape(),
+  // Process request after validation and sanitization.
+  (req: Request, res: Response, next: NextFunction) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create a Book object with escaped/trimmed data and old id.
+    let genre = new Genre({
+      name: req.body.name,
+      _id: req.params.id, //This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      async.parallel((err: string, results: {}) => {
+        if (err) {
+          return next(err);
+        }
+
+        res.render("genre_form", {
+          title: "Update Genre",
+          genre: genre,
+          errors: errors.array(),
+        });
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      Genre.findByIdAndUpdate(
+        req.params.id,
+        genre,
+        {},
+        (err: string, thegenre: any) => {
+          if (err) {
+            return next(err);
+          }
+          // Successful - redirect to genre detail page.
+          res.redirect(thegenre.url);
+        }
+      );
+    }
+  },
+];
 
 export {
   genre_list,
