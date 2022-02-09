@@ -110,6 +110,7 @@ var bookinstance_delete_get = function (req, res, next) {
         bookinstance: function (callback) {
             return BookInstance.findById(req.params.id).exec(callback);
         },
+        books: function (callback) { return Book.find(callback); },
     }, function (err, results) {
         if (err)
             return next(err);
@@ -145,12 +146,86 @@ var bookinstance_delete_post = function (req, res, next) {
 };
 exports.bookinstance_delete_post = bookinstance_delete_post;
 // Display bookinstance update form on GET
-var bookinstance_update_get = function (req, res) {
-    return res.send("NOT IMPLEMENTED: BookInstance update GET");
+var bookinstance_update_get = function (req, res, next) {
+    return async.parallel({
+        book_instance: function (callback) {
+            return BookInstance.findById(req.params.id).populate("book").exec(callback);
+        },
+        books: function (callback) { return Book.find(callback); },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        if (results.book_instance == null) {
+            var e = new Error("Book Instance not found");
+            res.status(404);
+            return next(e);
+        }
+        // success
+        res.render("bookinstance_form", {
+            title: "Update Book Instance",
+            book: results.book_instance,
+            book_list: results.books,
+            selected_book: results.book_instance.book._id,
+        });
+    });
 };
 exports.bookinstance_update_get = bookinstance_update_get;
 // Display bookinstance update form on POST
-var bookinstance_update_post = function (req, res) {
-    return res.send("NOT IMPLEMENTED: BookInstance update POST");
-};
+var bookinstance_update_post = [
+    // Validate and sanitize fields.
+    (0, express_validator_1.body)("book", "Book must be specified").trim().isLength({ min: 1 }).escape(),
+    (0, express_validator_1.body)("imprint", "Imprint must be specified")
+        .trim()
+        .isLength({ min: 1 })
+        .escape(),
+    (0, express_validator_1.body)("status").escape(),
+    (0, express_validator_1.body)("due_back", "Invalid date")
+        .optional({ checkFalsy: true })
+        .isISO8601()
+        .toDate(),
+    // Process request after validation and sanitization.
+    function (req, res, next) {
+        // Extract the validation errors from a request.
+        var errors = (0, express_validator_1.validationResult)(req);
+        // Create a Book object with escaped/trimmed data and old id.
+        var book_instance = new BookInstance({
+            book: req.body.book,
+            imprint: req.body.imprint,
+            status: req.body.status,
+            due_back: req.body.due_back,
+            _id: req.params.id, //This is required, or a new ID will be assigned!
+        });
+        if (!errors.isEmpty()) {
+            // There are errors. Render form again with sanitized values/error messages.
+            // Get all authors and genres for form.
+            async.parallel({
+                books: function (callback) {
+                    Book.find(callback);
+                },
+            }, function (err, results) {
+                if (err) {
+                    return next(err);
+                }
+                res.render("bookinstance_form", {
+                    title: "Update BookInstance",
+                    book_instance: book_instance,
+                    book_list: results.books,
+                    selected_book: book_instance.book._id,
+                    errors: errors.array(),
+                });
+            });
+            return;
+        }
+        else {
+            // Data from form is valid. Update the record.
+            BookInstance.findByIdAndUpdate(req.params.id, book_instance, {}, function (err, thebookinstance) {
+                if (err) {
+                    return next(err);
+                }
+                // Successful - redirect to book detail page.
+                res.redirect(thebookinstance.url);
+            });
+        }
+    },
+];
 exports.bookinstance_update_post = bookinstance_update_post;
