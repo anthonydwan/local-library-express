@@ -162,12 +162,91 @@ const author_delete_post = (req: Request, res: Response, next: NextFunction) =>
   );
 
 // Display Author update form on GET
-const author_update_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author update GET");
+const author_update_get = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      author: (callback: any) => Author.findById(req.params.id).exec(callback),
+    },
+    (err: string, results: { author: AuthorType }) => {
+      if (err) return next(err);
+      if (results.author == null) {
+        let e = new Error("Author not found");
+        res.status(404);
+        return next(e);
+      }
+      // success
+      res.render("author_form", {
+        title: "Update Author",
+        author: results.author,
+      });
+    }
+  );
 
 // Display Author update form on POST
-const author_update_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author update POST");
+const author_update_post = [
+  // Validate and sanitize fields.
+  body("first_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("First name must be specified")
+    .isAlphanumeric()
+    .withMessage("First name has non-alphanumeric characters."),
+  body("family_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Family name must be specified")
+    .isAlphanumeric()
+    .withMessage("Family name has non-alphanumeric characters."),
+  body("date_of_birth", "Invalid date of birth")
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .toDate(),
+  body("date_of_death", "Invalid date of birth")
+    .optional({ checkFalsy: true })
+    .isISO8601()
+    .toDate(),
+
+  // Process request after validation and sanitization.
+  (req: Request, res: Response, next: NextFunction) => {
+    // Extract the validation errors from a request.
+    const errors = validationResult(req);
+
+    // Create an Author object with escaped and trimmed data.
+    let author = new Author({
+      first_name: req.body.first_name,
+      family_name: req.body.family_name,
+      date_of_birth: req.body.date_of_birth,
+      date_of_death: req.body.date_of_death,
+      _id: req.params.id, //This is required, or a new ID will be assigned!
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+      res.render("author_form", {
+        title: "Update Author",
+        author: author,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      // Data from form is valid. Update the record.
+      Author.findByIdAndUpdate(
+        req.params.id,
+        author,
+        {},
+        (err: string, theauthor: any) => {
+          if (err) {
+            return next(err);
+          }
+          // Successful - redirect to book detail page.
+          res.redirect(theauthor.url);
+        }
+      );
+    }
+  },
+];
 
 export {
   author_list,
