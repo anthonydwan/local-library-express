@@ -178,12 +178,62 @@ const book_create_post = [
 ];
 
 // Display bookinstance delete frorm on GET
-const book_delete_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Book delete GET");
+const book_delete_get = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      book: (callback: any) => Book.findById(req.params.id).exec(callback),
+      book_instance: (callback: any) =>
+        BookInstance.find({ book: req.params.id }).exec(callback),
+    },
+    (
+      err: string,
+      results: { book: BookType; book_instance: BookInstanceType[] }
+    ) => {
+      if (err) return next(err);
+      if (results.book_instance.length == null) res.redirect("catalog/books");
+      // need to remove all book instances first
+      res.render("book_delete", {
+        title: "Delete Book",
+        book: results.book,
+        book_instance: results.book_instance,
+      });
+    }
+  );
 
 // Handle bookinstance delete on POST
-const book_delete_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Book delete POST");
+const book_delete_post = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      book: (callback: any) => Book.findById(req.body.bookid).exec(callback),
+      book_instance: (callback: any) =>
+        BookInstance.find({ book: req.body.bookid }).exec(callback),
+    },
+    (
+      err: string,
+      results: { book: BookType; book_instance: BookInstanceType[] }
+    ) => {
+      if (err) return next(err);
+      // Success
+      if (results.book_instance.length > 0) {
+        res.render("book_delete", {
+          title: "Delete Book",
+          book: results.book,
+          book_instance: results.book_instance,
+        });
+        return;
+      } else {
+        // Book has no instance. Delete object and redirect to the list of book
+        Book.findByIdAndRemove(
+          req.body.bookid,
+          function deleteBook(err: string) {
+            if (err) return next(err);
+            // Success - go to author list
+            res.redirect("/catalog/books");
+          }
+        );
+      }
+    }
+  );
 
 // Display bookinstance update form on GET
 const book_update_get = (req: Request, res: Response) =>

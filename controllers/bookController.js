@@ -160,13 +160,55 @@ var book_create_post = [
 ];
 exports.book_create_post = book_create_post;
 // Display bookinstance delete frorm on GET
-var book_delete_get = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Book delete GET");
+var book_delete_get = function (req, res, next) {
+    return async.parallel({
+        book: function (callback) { return Book.findById(req.params.id).exec(callback); },
+        book_instance: function (callback) {
+            return BookInstance.find({ book: req.params.id }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        if (results.book_instance.length == null)
+            res.redirect("catalog/books");
+        // need to remove all book instances first
+        res.render("book_delete", {
+            title: "Delete Book",
+            book: results.book,
+            book_instance: results.book_instance,
+        });
+    });
 };
 exports.book_delete_get = book_delete_get;
 // Handle bookinstance delete on POST
-var book_delete_post = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Book delete POST");
+var book_delete_post = function (req, res, next) {
+    return async.parallel({
+        book: function (callback) { return Book.findById(req.body.bookid).exec(callback); },
+        book_instance: function (callback) {
+            return BookInstance.find({ book: req.body.bookid }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        // Success
+        if (results.book_instance.length > 0) {
+            res.render("book_delete", {
+                title: "Delete Book",
+                book: results.book,
+                book_instance: results.book_instance,
+            });
+            return;
+        }
+        else {
+            // Book has no instance. Delete object and redirect to the list of book
+            Book.findByIdAndRemove(req.body.bookid, function deleteBook(err) {
+                if (err)
+                    return next(err);
+                // Success - go to author list
+                res.redirect("/catalog/books");
+            });
+        }
+    });
 };
 exports.book_delete_post = book_delete_post;
 // Display bookinstance update form on GET
