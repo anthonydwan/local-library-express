@@ -104,13 +104,56 @@ var author_create_post = [
 ];
 exports.author_create_post = author_create_post;
 // Display Author delete form on GET
-var author_delete_get = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Author delete GET");
+var author_delete_get = function (req, res, next) {
+    return async.parallel({
+        author: function (callback) { return Author.findById(req.params.id).exec(callback); },
+        authors_books: function (callback) {
+            return Book.find({ author: req.params.id }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        if (results.author == null)
+            res.redirect("catalog/authors");
+        res.render("author_delete", {
+            title: "Delete Author",
+            author: results.author,
+            author_books: results.authors_books,
+        });
+    });
 };
 exports.author_delete_get = author_delete_get;
 // Handle Author delete on POST
-var author_delete_post = function (req, res) {
-    return res.send("NOT IMPLEMENTED: Author delete POST");
+var author_delete_post = function (req, res, next) {
+    return async.parallel({
+        author: function (callback) {
+            return Author.findById(req.body.authorid).exec(callback);
+        },
+        authors_books: function (callback) {
+            return Book.find({ author: req.body.authorid }).exec(callback);
+        },
+    }, function (err, results) {
+        if (err)
+            return next(err);
+        // Success
+        if (results.authors_books.length > 0) {
+            res.render("author_delete", {
+                title: "Delete Author",
+                author: results.author,
+                author_books: results.authors_books,
+            });
+            return;
+        }
+        else {
+            // Author has no books. Delete object and redirect to the list of authors.
+            Author.findByIdAndRemove(req.body.authorid, function deleteAuthor(err) {
+                if (err)
+                    return next(err);
+                // Success - go to author list
+                res.redirect("/catalog/authors");
+            });
+        }
+    });
 };
 exports.author_delete_post = author_delete_post;
 // Display Author update form on GET

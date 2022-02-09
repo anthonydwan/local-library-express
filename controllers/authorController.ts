@@ -104,12 +104,62 @@ const author_create_post = [
 ];
 
 // Display Author delete form on GET
-const author_delete_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author delete GET");
+const author_delete_get = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      author: (callback: any) => Author.findById(req.params.id).exec(callback),
+      authors_books: (callback: any) =>
+        Book.find({ author: req.params.id }).exec(callback),
+    },
+    (
+      err: string,
+      results: { author: AuthorType; authors_books: BookType[] }
+    ) => {
+      if (err) return next(err);
+      if (results.author == null) res.redirect("catalog/authors");
+      res.render("author_delete", {
+        title: "Delete Author",
+        author: results.author,
+        author_books: results.authors_books,
+      });
+    }
+  );
 
 // Handle Author delete on POST
-const author_delete_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Author delete POST");
+const author_delete_post = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      author: (callback: any) =>
+        Author.findById(req.body.authorid).exec(callback),
+      authors_books: (callback: any) =>
+        Book.find({ author: req.body.authorid }).exec(callback),
+    },
+    (
+      err: string,
+      results: { author: AuthorType; authors_books: BookType[] }
+    ) => {
+      if (err) return next(err);
+      // Success
+      if (results.authors_books.length > 0) {
+        res.render("author_delete", {
+          title: "Delete Author",
+          author: results.author,
+          author_books: results.authors_books,
+        });
+        return;
+      } else {
+        // Author has no books. Delete object and redirect to the list of authors.
+        Author.findByIdAndRemove(
+          req.body.authorid,
+          function deleteAuthor(err: string) {
+            if (err) return next(err);
+            // Success - go to author list
+            res.redirect("/catalog/authors");
+          }
+        );
+      }
+    }
+  );
 
 // Display Author update form on GET
 const author_update_get = (req: Request, res: Response) =>
