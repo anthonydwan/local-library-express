@@ -93,12 +93,55 @@ const genre_create_post = [
 ];
 
 // Display genre delete frorm on GET
-const genre_delete_get = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre delete GET");
+const genre_delete_get = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      genre: (callback: any) => Genre.findById(req.params.id).exec(callback),
+      genre_books: (callback: any) =>
+        Book.find({ genre: req.params.id }).exec(callback),
+    },
+    (err: string, results: { genre: GenreType; genre_books: BookType[] }) => {
+      if (err) return next(err);
+      if (results.genre == null) res.redirect("/catalog/genres");
+      res.render("genre_delete", {
+        title: "Delete Genre",
+        genre: results.genre,
+        genre_books: results.genre_books,
+      });
+    }
+  );
 
 // Handle genre delete on POST
-const genre_delete_post = (req: Request, res: Response) =>
-  res.send("NOT IMPLEMENTED: Genre delete POST");
+const genre_delete_post = (req: Request, res: Response, next: NextFunction) =>
+  async.parallel(
+    {
+      genre: (callback: any) => Genre.findById(req.body.genreid).exec(callback),
+      genre_books: (callback: any) =>
+        Book.find({ genre: req.body.genreid }).exec(callback),
+    },
+    (err: string, results: { genre: GenreType; genre_books: BookType[] }) => {
+      if (err) return next(err);
+      // Success
+      if (results.genre_books.length > 0) {
+        res.render("genre_delete", {
+          title: "Delete Genre",
+          genre: results.genre,
+          genre_books: results.genre_books,
+        });
+        return;
+      } else {
+        // Author has no books. Delete object and redirect to the list of authors.
+        Genre.findByIdAndRemove(
+          req.body.genreid,
+          function deleteGenre(err: string) {
+            if (err) return next(err);
+            // Success - go to genre list
+            res.redirect("/catalog/genres");
+          }
+        );
+      }
+    }
+  );
 
 // Display genre update form on GET
 const genre_update_get = (req: Request, res: Response) =>
